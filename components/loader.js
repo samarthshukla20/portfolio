@@ -35,7 +35,7 @@ export default function DosLoader() {
     >
       <div className="w-full max-w-2xl p-8 border-4 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.3)] bg-black">
         <h2 className="text-2xl font-black mb-6 uppercase tracking-widest border-b-2 border-green-500 pb-2">
-          Samarth_OS v2.0 // Boot Sequence
+          Loading_Assets // Boot Sequence
         </h2>
         
         <div className="space-y-2 text-sm md:text-base">
