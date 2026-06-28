@@ -134,61 +134,80 @@ function SceneController({ children }) {
   useEffect(() => {
     if (!modelRef.current) return;
 
-    const proxy = {
-      x: 3.5, y: -1.0, z: 0,         
-      rotX: 0.1, rotY: -0.5, rotZ: 0, 
-      scale: 0.5                     
-    };
+    let ctx = gsap.context(() => {
+      // Initialize GSAP MatchMedia for responsive 3D routing
+      let mm = gsap.matchMedia();
 
-    modelRef.current.position.set(proxy.x, proxy.y, proxy.z);
-    modelRef.current.rotation.set(proxy.rotX, proxy.rotY, proxy.rotZ);
-    modelRef.current.scale.set(proxy.scale, proxy.scale, proxy.scale);
+      // ==========================================
+      // DESKTOP TIMELINE (Screens 768px and wider)
+      // ==========================================
+      mm.add("(min-width: 768px)", () => {
+        // 1. Desktop Starting Position (Right side)
+        modelRef.current.position.set(3.5, -1.0, 0);
+        modelRef.current.rotation.set(0.1, -0.5, 0);
+        modelRef.current.scale.set(0.5, 0.5, 0.5);
 
-    const timer = setTimeout(() => {
-      let ctx = gsap.context(() => {
         const tl = gsap.timeline({
           scrollTrigger: {
-            trigger: "#project-section", 
-            start: "top bottom", 
-            end: "bottom bottom", 
-            scrub: 1, 
+            trigger: "#project-section",
+            start: "top bottom",
+            end: "bottom bottom",
+            scrub: 1,
           }
         });
 
-        // STEP 1: The Dive (Calibrated for your new HTML coordinates)
-        tl.to(proxy, { 
-          x: 0.1,       
-          y: -1.65,      // Pulled further down to account for your y: 1.8 HTML shift
-          z: 4.8,       // Backed off slightly to fit your larger distanceFactor
-          rotX: 0,      
-          rotY: 0, 
-          rotZ: 0,
-          scale: 0.7,   // Slightly increased base scale
-          duration: 1,  
-          onUpdate: () => {
-            if(modelRef.current) {
-              modelRef.current.position.set(proxy.x, proxy.y, proxy.z);
-              modelRef.current.rotation.set(proxy.rotX, proxy.rotY, proxy.rotZ);
-              modelRef.current.scale.set(proxy.scale, proxy.scale, proxy.scale);
-            }
-          }
-        }, 0)
-        .to("#hero-section", { opacity: 0, y: -50, duration: 1 }, 0)
-        
-        // STEP 2: The Inner Scroll
-        .to("#screen-content", { 
-          y: -500, 
-          duration: 2, 
-          ease: "power1.inOut" 
-        }, 1); 
-        
-        ScrollTrigger.refresh();
+        // 2. Desktop Dive (Pull to center)
+        tl.to(modelRef.current.position, { x: 0.1, y: -1.65, z: 4.8, duration: 1 }, 0)
+          .to(modelRef.current.rotation, { x: 0, y: 0, z: 0, duration: 1 }, 0)
+          .to(modelRef.current.scale, { x: 0.7, y: 0.7, z: 0.7, duration: 1 }, 0)
+          .to("#hero-section", { opacity: 0, y: -50, duration: 1 }, 0)
+          
+          // Desktop Inner Scroll
+          .to("#screen-content", { y: -500, duration: 2, ease: "power1.inOut" }, 1);
       });
 
-      return () => ctx.revert();
-    }, 100);
+      // ==========================================
+      // MOBILE TIMELINE (Screens narrower than 768px)
+      // ==========================================
+      mm.add("(max-width: 767px)", () => {
+        // 1. Mobile Starting Position (Dead center, pushed lower)
+        modelRef.current.position.set(0, -3.0, -1.5);
+        modelRef.current.rotation.set(0.1, 0, 0); 
+        modelRef.current.scale.set(0.35, 0.35, 0.35); 
 
-    return () => clearTimeout(timer);
+        const tl = gsap.timeline({
+          scrollTrigger: {
+            trigger: "#project-section",
+            start: "top bottom",
+            end: "bottom bottom",
+            scrub: 1,
+          }
+        });
+
+        // 2. Mobile Dive (Backed up so the wide monitor fits the narrow screen)
+        tl.to(modelRef.current.position, { 
+            x: 0, 
+            y: -1.2,  // Pushed slightly lower to center the glass, not the keyboard
+            z: 3.5,   // CRITICAL FIX: Backed away from the lens so it doesn't clip (was 5.6)
+            duration: 1 
+          }, 0)
+          .to(modelRef.current.rotation, { x: 0, y: 0, z: 0, duration: 1 }, 0)
+          .to(modelRef.current.scale, { 
+            x: 0.55,  // Scaled down to fit horizontally
+            y: 0.55, 
+            z: 0.55, 
+            duration: 1 
+          }, 0)
+          .to("#hero-section", { opacity: 0, y: -50, duration: 1 }, 0)
+          
+          // Mobile Inner Scroll 
+          .to("#screen-content", { y: -500, duration: 2, ease: "power1.inOut" }, 1);
+      });
+
+    }); // End GSAP Context
+
+    // Cleanup: Revert the GSAP context when the component unmounts
+    return () => ctx.revert();
   }, []);
 
   useFrame(() => {

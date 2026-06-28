@@ -1,10 +1,23 @@
-import React from 'react'
+import React, { useState, useEffect } from 'react'
 import { useGLTF, Html } from '@react-three/drei' 
 import Link from 'next/link'
 
 export default function ComputerModel(props) {
   const { nodes, materials } = useGLTF('/models/computer.glb')
   
+  // --- MOBILE DETECTOR ---
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    // Check if the screen is narrower than 768px (standard mobile breakpoint)
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    
+    checkMobile(); // Run once on load
+    window.addEventListener('resize', checkMobile); // Listen for screen rotation/resizing
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
   return (
     <group {...props} dispose={null}>
       {/* Keyboard and Base Group */}
@@ -31,9 +44,13 @@ export default function ComputerModel(props) {
           <Html
             transform
             distanceFactor={1.85}    
-            position={[0, 1.8, 0.12]}  
+            
+            // THE FIX: If isMobile is true, use 1.2. If false (desktop), use 1.8.
+            position={[0, isMobile ? 1.2 : 1.8, 0.12]}  
+            
             rotation={[0, 0, 0]}     
           >
+            {/* ... Rest of your HTML stays exactly the same ... */}
             <div className="w-[800px] h-[600px] bg-[#FFFDF6] text-black overflow-hidden border-[12px] border-black relative pointer-events-auto">
               
               <div id="screen-content" className="w-full p-8 pt-12 absolute top-0 left-0">
