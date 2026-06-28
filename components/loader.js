@@ -41,7 +41,7 @@ export default function DosLoader() {
         <div className="space-y-2 text-sm md:text-base">
           <p>Mounting Virtual Drive............. [OK]</p>
           <p>Loading WebGL Context.............. [OK]</p>
-          <p className="animate-pulse">Fetching 3D Assets................. {Math.round(fakeProgress)}%</p>
+          <p className="animate-pulse">Fetching 3D Models................. {Math.round(fakeProgress)}%</p>
         </div>
 
         {/* Brutalist Progress Bar */}
